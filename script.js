@@ -19,8 +19,12 @@ document.addEventListener('DOMContentLoaded', () => {
    ═══════════════════════════════════════════════════════ */
 function calculateAge() {
     const dob = new Date('2003-06-27');
-    const birthday2026 = new Date('2026-06-27');
-    const age = birthday2026.getFullYear() - dob.getFullYear();
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+        age--;
+    }
     const ageEl = document.getElementById('age-number');
     if (ageEl) {
         ageEl.textContent = age;
@@ -35,7 +39,7 @@ function initPreloader() {
     
     window.addEventListener('load', () => {
         setTimeout(() => {
-            preloader.classList.add('hidden');
+            if (preloader) preloader.classList.add('hidden');
             // Trigger initial confetti burst
             setTimeout(() => {
                 launchConfetti();
@@ -45,7 +49,7 @@ function initPreloader() {
 
     // Fallback: Hide preloader after 5 seconds max
     setTimeout(() => {
-        preloader.classList.add('hidden');
+        if (preloader) preloader.classList.add('hidden');
     }, 5000);
 }
 
@@ -83,7 +87,6 @@ function initNavDots() {
     const dots = document.querySelectorAll('.nav-dot');
     const sections = document.querySelectorAll('section');
     
-    // Highlight active section on scroll
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -120,15 +123,17 @@ function initCountdown() {
         
         if (diff <= 0) {
             // Birthday has arrived!
-            daysEl.textContent = '🎉';
-            hoursEl.textContent = '🎂';
-            minutesEl.textContent = '🥳';
-            secondsEl.textContent = '💕';
-            messageEl.innerHTML = `
-                <strong style="font-size: 1.3rem; color: var(--primary-dark);">
-                    🎉 Today is Vanshika's Birthday! Let's celebrate! 🎂
-                </strong>
-            `;
+            if (daysEl) daysEl.textContent = '🎉';
+            if (hoursEl) hoursEl.textContent = '🎂';
+            if (minutesEl) minutesEl.textContent = '🥳';
+            if (secondsEl) secondsEl.textContent = '💕';
+            if (messageEl) {
+                messageEl.innerHTML = `
+                    <strong style="font-size: 1.3rem; color: var(--primary-dark);">
+                        🎉 Today is Vanshika's Birthday! Let's celebrate! 🎂
+                    </strong>
+                `;
+            }
             return;
         }
         
@@ -137,10 +142,10 @@ function initCountdown() {
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((diff % (1000 * 60)) / 1000);
         
-        animateNumber(daysEl, days);
-        animateNumber(hoursEl, hours);
-        animateNumber(minutesEl, minutes);
-        animateNumber(secondsEl, seconds);
+        if (daysEl) animateNumber(daysEl, days);
+        if (hoursEl) animateNumber(hoursEl, hours);
+        if (minutesEl) animateNumber(minutesEl, minutes);
+        if (secondsEl) animateNumber(secondsEl, seconds);
     }
     
     function animateNumber(element, value) {
@@ -165,6 +170,7 @@ function initCountdown() {
    ═══════════════════════════════════════════════════════ */
 function initFloatingPetals() {
     const container = document.getElementById('petals-container');
+    if (!container) return;
     const petalEmojis = ['🌸', '💜', '🦋', '✨', '💕', '🌷', '💫', '🌺'];
     
     function createPetal() {
@@ -210,6 +216,7 @@ function initFloatingPetals() {
    ═══════════════════════════════════════════════════════ */
 function initHeroParticles() {
     const container = document.getElementById('hero-particles');
+    if (!container) return;
     
     function createParticle() {
         const particle = document.createElement('div');
@@ -217,7 +224,7 @@ function initHeroParticles() {
         const y = Math.random() * 100;
         const size = 2 + Math.random() * 4;
         const duration = 2 + Math.random() * 3;
-        // Use purple/pink particles instead of gold
+        
         const colors = [
             'rgba(199,107,159,0.8)',
             'rgba(155,110,183,0.8)',
@@ -289,28 +296,159 @@ function initLetterReveal() {
 /* ═══════════════════════════════════════════════════════
    BLOW CANDLES INTERACTION
    ═══════════════════════════════════════════════════════ */
-function blowCandles() {
+let isBlowingInProgress = false;
+
+// Synthesize a breath/puff sound using the Web Audio API (completely client-side)
+function playPuffSound(volume = 0.25, duration = 0.3) {
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        
+        // Generate white noise
+        const bufferSize = ctx.sampleRate * duration;
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+        }
+        
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
+        
+        // Lowpass filter sweeping downwards to simulate air blowing
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(600, ctx.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + duration);
+        
+        // Volume envelope (gain)
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        
+        noise.start();
+        noise.stop(ctx.currentTime + duration);
+    } catch (e) {
+        console.log('Audio Context error: ', e);
+    }
+}
+
+// Generate physical smoke particles when a candle is extinguished
+function triggerSmoke(candleElement) {
+    for (let i = 0; i < 3; i++) {
+        const smoke = document.createElement('div');
+        smoke.className = 'smoke-particle';
+        
+        const size = 6 + Math.random() * 7;
+        const drift = (Math.random() - 0.5) * 22; // left/right drift
+        
+        smoke.style.setProperty('--size', `${size}px`);
+        smoke.style.setProperty('--drift', `${drift}px`);
+        smoke.style.setProperty('--delay', `${i * 120}ms`);
+        
+        candleElement.appendChild(smoke);
+        
+        // Remove particles after animation completes
+        setTimeout(() => {
+            smoke.remove();
+        }, 1500 + i * 120);
+    }
+}
+
+// Blow an individual candle when clicked
+function blowIndividualCandle(candleElement) {
+    if (isBlowingInProgress) return;
+    
+    const flame = candleElement.querySelector('.flame');
+    if (flame && !flame.classList.contains('blown')) {
+        flame.classList.add('blown');
+        
+        // Play puff sound and show smoke
+        playPuffSound(0.2, 0.25);
+        triggerSmoke(candleElement);
+        
+        // Check if all candles are blown
+        checkAllCandlesBlown();
+    }
+}
+
+// Check if all flames are extinguished
+function checkAllCandlesBlown() {
     const flames = document.querySelectorAll('.flame');
+    const allBlown = Array.from(flames).every(f => f.classList.contains('blown'));
+    
+    if (allBlown) {
+        showCelebration();
+    }
+}
+
+// Reveal wishes and trigger massive confetti
+function showCelebration() {
+    isBlowingInProgress = true; // disable further candle clicks
+    
     const btn = document.getElementById('blow-btn');
     const wishMsg = document.getElementById('wish-message');
+    const cake = document.querySelector('.cake');
     
-    // Blow out candles one by one
+    // Add magical ambient glow to the cake
+    if (cake) cake.classList.add('magical-glow');
+    
+    // Hide button and reveal wishes
+    if (btn) btn.classList.add('hidden');
+    
+    setTimeout(() => {
+        if (wishMsg) {
+            wishMsg.classList.add('visible');
+            
+            // Multiple bursts of colorful confetti
+            launchConfetti();
+            setTimeout(launchConfetti, 600);
+            setTimeout(launchConfetti, 1300);
+            setTimeout(launchConfetti, 2200);
+        }
+    }, 400);
+}
+
+// Automatic blow all candles in a wave with a wind-sweep visual effect
+function blowCandles() {
+    if (isBlowingInProgress) return;
+    isBlowingInProgress = true;
+    
+    const flames = document.querySelectorAll('.flame');
+    const cakeWrapper = document.getElementById('cake-wrapper');
+    
+    // Create and animate the wind sweep line
+    const wind = document.createElement('div');
+    wind.className = 'wind-sweep';
+    if (cakeWrapper) cakeWrapper.appendChild(wind);
+    
+    // Trigger CSS animation reflow
+    setTimeout(() => {
+        wind.classList.add('active');
+        playPuffSound(0.5, 0.85); // louder breath sound for sweep
+    }, 50);
+    
+    // Extinguish candles in a left-to-right sweep sequence
     flames.forEach((flame, index) => {
         setTimeout(() => {
-            flame.classList.add('blown');
-        }, index * 200);
+            if (!flame.classList.contains('blown')) {
+                flame.classList.add('blown');
+                triggerSmoke(flame.parentElement);
+            }
+        }, index * 200 + 150);
     });
     
-    // Hide button and show wish
+    // Clean up wind sweep element and launch celebration
     setTimeout(() => {
-        btn.classList.add('hidden');
-        wishMsg.classList.add('visible');
-        
-        // Trigger celebration confetti
-        launchConfetti();
-        setTimeout(launchConfetti, 500);
-        setTimeout(launchConfetti, 1200);
-    }, flames.length * 200 + 300);
+        wind.remove();
+        showCelebration();
+    }, flames.length * 200 + 400);
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -318,6 +456,7 @@ function blowCandles() {
    ═══════════════════════════════════════════════════════ */
 function launchConfetti() {
     const canvas = document.getElementById('confetti-canvas');
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     
     canvas.width = window.innerWidth;
@@ -426,35 +565,37 @@ window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(() => {
         const canvas = document.getElementById('confetti-canvas');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        if (canvas) {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
     }, 250);
 });
 
 /* ═══════════════════════════════════════════════════════
-   MUSIC TOGGLE (placeholder - add audio URL if desired)
+   MUSIC TOGGLE
    ═══════════════════════════════════════════════════════ */
 const musicBtn = document.getElementById('music-toggle');
 let isMusicPlaying = false;
 
-// Create audio element (placeholder - user can add their own mp3)
 const bgMusic = new Audio();
-// bgMusic.src = 'music/birthday-song.mp3'; // Uncomment and add your music file
 bgMusic.loop = true;
 bgMusic.volume = 0.3;
 
-musicBtn.addEventListener('click', () => {
-    if (bgMusic.src && bgMusic.src !== window.location.href) {
-        if (isMusicPlaying) {
-            bgMusic.pause();
-            musicBtn.classList.remove('playing');
-        } else {
-            bgMusic.play().catch(() => {});
-            musicBtn.classList.add('playing');
+if (musicBtn) {
+    musicBtn.addEventListener('click', () => {
+        if (bgMusic.src && bgMusic.src !== window.location.href) {
+            if (isMusicPlaying) {
+                bgMusic.pause();
+                musicBtn.classList.remove('playing');
+            } else {
+                bgMusic.play().catch(() => {});
+                musicBtn.classList.add('playing');
+            }
+            isMusicPlaying = !isMusicPlaying;
         }
-        isMusicPlaying = !isMusicPlaying;
-    }
-});
+    });
+}
 
 /* ═══════════════════════════════════════════════════════
    PARALLAX EFFECT ON SCROLL
@@ -470,12 +611,17 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 
 /* ═══════════════════════════════════════════════════════
-   EASTER EGG: Heart burst on triple-click
+   EASTER EGG: Triple-click heart burst & click hearts
    ═══════════════════════════════════════════════════════ */
 let clickCount = 0;
 let clickTimer;
 
 document.addEventListener('click', (e) => {
+    // Avoid spawning hearts on buttons or interactive elements to prevent overlap
+    if (e.target.tagName === 'BUTTON' || e.target.closest('a') || e.target.closest('.candle')) {
+        return;
+    }
+
     clickCount++;
     
     clearTimeout(clickTimer);

@@ -212,7 +212,7 @@
                 <div class="gallery-card animate-on-scroll" data-animation="fadeUp">
                     <div class="card-inner">
                         <div class="card-image-wrapper">
-                            <img src="photo1.jpg" alt="Together with bestie" class="gallery-image" loading="lazy">
+                            <img src="photo11.jpg" alt="Together with bestie" class="gallery-image" loading="lazy">
                             <div class="card-overlay">
                                 <span class="overlay-icon">💕</span>
                             </div>
@@ -343,32 +343,77 @@
             <div class="section-header animate-on-scroll" data-animation="fadeUp">
                 <span class="section-tag">🎂 Make a Wish</span>
                 <h2 class="section-title">Blow the Candles, Vanshika!</h2>
-                <p class="section-subtitle">Close your eyes, make a wish, and blow!</p>
+                <p class="section-subtitle">Make a wish and blow out the candles!</p>
             </div>
 
             <div class="cake-container animate-on-scroll" data-animation="scaleIn">
                 <div class="cake-wrapper" id="cake-wrapper">
-                    <!-- CSS Cake -->
+                    <!-- CSS 3D Cake -->
                     <div class="cake">
+                        <!-- Top Tier -->
                         <div class="cake-tier tier-top">
+                            <div class="tier-top-surface"></div>
+                            <div class="cream-dollops">
+                                <div class="dollop" style="--left: 10px; --top: 2px; --delay: 0s;"></div>
+                                <div class="dollop" style="--left: 30px; --top: -4px; --delay: 0.1s;"></div>
+                                <div class="dollop" style="--left: 55px; --top: -6px; --delay: 0.2s;"></div>
+                                <div class="dollop" style="--left: 80px; --top: -4px; --delay: 0.3s;"></div>
+                                <div class="dollop" style="--left: 100px; --top: 2px; --delay: 0.4s;"></div>
+                            </div>
                             <div class="candles">
-                                <div class="candle"><div class="flame" id="flame1"></div></div>
-                                <div class="candle"><div class="flame" id="flame2"></div></div>
-                                <div class="candle"><div class="flame" id="flame3"></div></div>
-                                <div class="candle"><div class="flame" id="flame4"></div></div>
-                                <div class="candle"><div class="flame" id="flame5"></div></div>
+                                <div class="candle" onclick="blowIndividualCandle(this)" title="Click to blow out!">
+                                    <div class="wick"></div>
+                                    <div class="flame" id="flame1"></div>
+                                </div>
+                                <div class="candle" onclick="blowIndividualCandle(this)" title="Click to blow out!">
+                                    <div class="wick"></div>
+                                    <div class="flame" id="flame2"></div>
+                                </div>
+                                <div class="candle" onclick="blowIndividualCandle(this)" title="Click to blow out!">
+                                    <div class="wick"></div>
+                                    <div class="flame" id="flame3"></div>
+                                </div>
+                                <div class="candle" onclick="blowIndividualCandle(this)" title="Click to blow out!">
+                                    <div class="wick"></div>
+                                    <div class="flame" id="flame4"></div>
+                                </div>
+                                <div class="candle" onclick="blowIndividualCandle(this)" title="Click to blow out!">
+                                    <div class="wick"></div>
+                                    <div class="flame" id="flame5"></div>
+                                </div>
                             </div>
-                            <div class="frosting"></div>
+                            <!-- Dripping Frosting SVG -->
+                            <svg class="drip-svg" viewBox="0 0 120 25" preserveAspectRatio="none">
+                                <path d="M0,0 L120,0 L120,5 C115,12 110,15 105,15 C100,15 95,8 90,8 C85,8 80,18 75,18 C70,18 65,10 60,10 C55,10 50,22 45,22 C40,22 35,12 30,12 C25,12 20,20 15,20 C10,20 5,8 0,5 Z" fill="#ffffff"/>
+                            </svg>
                         </div>
+                        
+                        <!-- Middle Tier -->
                         <div class="cake-tier tier-middle">
-                            <div class="frosting"></div>
+                            <div class="tier-mid-surface"></div>
+                            <div class="shoulder-toppings-middle">
+                                <span class="topping-strawberry">🍓</span>
+                                <span class="topping-strawberry">🍓</span>
+                            </div>
+                            <svg class="drip-svg" viewBox="0 0 120 25" preserveAspectRatio="none">
+                                <path d="M0,0 L120,0 L120,5 C115,12 110,15 105,15 C100,15 95,8 90,8 C85,8 80,18 75,18 C70,18 65,10 60,10 C55,10 50,22 45,22 C40,22 35,12 30,12 C25,12 20,20 15,20 C10,20 5,8 0,5 Z" fill="#ffffff"/>
+                            </svg>
                             <div class="cake-decoration">
-                                <span>🌸</span><span>💜</span><span>🌸</span><span>💜</span><span>🌸</span>
+                                <span>🌹</span><span>💕</span><span>🌹</span><span>💕</span><span>🌹</span>
                             </div>
                         </div>
+                        
+                        <!-- Bottom Tier -->
                         <div class="cake-tier tier-bottom">
-                            <div class="frosting"></div>
-                            <div class="cake-text">Happy Birthday!</div>
+                            <div class="tier-bot-surface"></div>
+                            <div class="shoulder-toppings-bottom">
+                                <span class="topping-flower">🌸</span>
+                                <span class="topping-flower">🌸</span>
+                            </div>
+                            <svg class="drip-svg" viewBox="0 0 120 25" preserveAspectRatio="none">
+                                <path d="M0,0 L120,0 L120,5 C115,12 110,15 105,15 C100,15 95,8 90,8 C85,8 80,18 75,18 C70,18 65,10 60,10 C55,10 50,22 45,22 C40,22 35,12 30,12 C25,12 20,20 15,20 C10,20 5,8 0,5 Z" fill="#ffffff"/>
+                            </svg>
+                            <div class="cake-text">Happy Birthday Vanshika!</div>
                         </div>
                         <div class="cake-plate"></div>
                     </div>
@@ -378,7 +423,7 @@
                     </button>
                     <div class="wish-message" id="wish-message">
                         <h3>🎉 Happy Birthday Vanshika! 🎉</h3>
-                        <p>May all your wishes come true! You deserve the absolute best! 🥳💕</p>
+                        <p>Wishing you a year as bright and beautiful as your smile! 🥳</p>
                     </div>
                 </div>
             </div>
